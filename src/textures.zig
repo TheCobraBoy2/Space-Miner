@@ -21,14 +21,14 @@ fn ensureImages() !void {
 pub fn loadTexture(path: [:0]const u8) !rl.Texture2D {
     try ensureTextures();
     const tex = try rl.loadTexture(path);
-    try textures.?.append(tex);
+    try textures.?.append(std.heap.page_allocator, tex);
     return tex;
 }
 
 pub fn loadImage(path: [:0]const u8) !rl.Image {
     try ensureImages();
     const img = try rl.loadImage(path);
-    try images.?.append(img);
+    try images.?.append(std.heap.page_allocator, img);
     return img;
 }
 
@@ -80,4 +80,3 @@ pub fn unloadAll() void {
     unloadImages();
     unloadTextures();
 }
-

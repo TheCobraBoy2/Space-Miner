@@ -25,7 +25,7 @@ const window_title = "Space Miner";
 const window_color = rl.Color.black;
 const target_fps = 60;
 const window_exit_key = rl.KeyboardKey.f9;
-const allocator: std.mem.Allocator = undefined;
+var allocator: std.mem.Allocator = undefined;
 
 // ------------------------------
 // ---       Game State       ---
@@ -43,20 +43,29 @@ fn fmt(
     buf: []u8,
     comptime str: []const u8,
     args: anytype,
-) ![]const u8 {
-    return std.fmt.bufPrint(buf, str, args);
+) ![:0]const u8 {
+    const written = try std.fmt.bufPrint(buf[0 .. buf.len - 1], str, args);
+
+    buf[written.len] = 0;
+
+    return buf[0..written.len :0];
 }
 
 fn aFmt(
     alloc: std.mem.Allocator,
     comptime str: []const u8,
     args: anytype,
-) ![]const u8 {
-    return std.fmt.allocPrint(alloc, str, args);
+) ![:0]const u8 {
+    const s = try std.fmt.allocPrint(alloc, str, args);
+
+    const buf = try allocator.realloc(s, s.len + 1);
+    buf[s.len] = 0;
+
+    return buf[0..s.len :0];
 }
 
 // requires a path from workspace_root/assets
-fn assetPath(buf: []u8, path: []const u8) ![]const u8 {
+fn assetPath(buf: []u8, path: []const u8) ![:0]const u8 {
     return fmt(buf, "assets/{s}", .{path});
 }
 
@@ -66,7 +75,7 @@ fn assetPath(buf: []u8, path: []const u8) ![]const u8 {
 fn update() void {}
 
 fn render() void {
-    var frame_arena = std.heap.ArenaAllocator.init();
+    var frame_arena = std.heap.ArenaAllocator.init(allocator);
     defer frame_arena.deinit();
     const A = frame_arena.allocator();
     _ = A;
@@ -94,11 +103,10 @@ pub fn main() !void {
 
     rl.setExitKey(window_exit_key);
     rl.setTargetFPS(target_fps);
-    var a_buf: [256]u8 = undefined; // buffer for assetPaths
+    //var a_buf: [256]u8 = undefined; // buffer for assetPaths
+    //_ = a_buf;
 
-    const texture = try Textures.loadTexture(assetPath(&a_buf, "texturefile.png"));
-    _ = texture;
-
+    //const texture = try Textures.loadTexture(try assetPath(&a_buf, "texturefile.png"));
     // Initialization of the game state
     state = .{};
 

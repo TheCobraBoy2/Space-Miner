@@ -13,7 +13,7 @@ fn ensureSounds() !void {
 pub fn loadSound(path: [:0]const u8) !rl.Sound {
     try ensureSounds();
     const sou = try rl.loadSound(path);
-    try sounds.?.append(sou);
+    try sounds.?.append(std.heap.page_allocator, sou);
     return sou;
 }
 
