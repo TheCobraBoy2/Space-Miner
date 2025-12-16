@@ -91,6 +91,7 @@ pub fn build(b: *std.Build) void {
                 // can be extremely useful in case of collisions (which can happen
                 // importing modules from different packages).
                 .{ .name = "Space_Miner", .module = mod },
+                .{ .name = "BoundedArray", .module = bounded_array.module("bounded_array") },
             },
         }),
     });
